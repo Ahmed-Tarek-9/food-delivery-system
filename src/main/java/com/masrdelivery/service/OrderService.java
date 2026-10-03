@@ -296,6 +296,31 @@ public class OrderService {
         }
     }
 
+    public Optional<Order> claimNextOrderForRider(Rider rider) {
+        if (rider == null) {
+            throw new NullEntityException("Rider");
+        }
+
+        if (rider.getRiderStatus() != RiderStatus.AVAILABLE) {
+            throw new IllegalRiderAssignmentException("Rider must be AVAILABLE to claim an order.");
+        }
+
+        Optional<Order> orderOpt = orderDispatchQueue.pollNextForDistrict(rider.getCurrentDistrict());
+
+        if (orderOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Order order = orderOpt.get();
+
+        order.assignRider(rider);
+        rider.updateRiderStatus(RiderStatus.DELIVERING);
+        rider.setActiveOrder(order);
+        order.setOrderStatus(OrderStatus.ASSIGNED);
+
+        return Optional.of(order);
+    }
+
     public void markOrderOutForDelivery(String orderId) {
         Order order = findOrder(orderId);
 

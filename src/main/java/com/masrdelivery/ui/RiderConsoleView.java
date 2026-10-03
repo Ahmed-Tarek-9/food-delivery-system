@@ -155,9 +155,9 @@ public class RiderConsoleView {
         }
 
         try {
-            Optional<Order> dispatched = orderService.dispatchNextReadyOrder();
-            if (dispatched.isPresent()) {
-                Order order = dispatched.get();
+            Optional<Order> claimed = orderService.claimNextOrderForRider(rider);
+            if (claimed.isPresent()) {
+                Order order = claimed.get();
                 System.out.printf("%nSuccess! Order %s from %s [%s] assigned to you!%n",
                         order.getId(), order.getRestaurant().getName(), order.getRestaurant().getDistrict());
             } else {
